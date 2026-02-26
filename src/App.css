@@ -8,8 +8,10 @@
   --neon-green: #22c55e;
   --text-primary: #fafafa;
   --text-muted: #71717a;
+  --text-dim: #94a3b8;
 }
 
+/* BASE RESET */
 body, html, #root {
   height: 100vh;
   margin: 0;
@@ -26,6 +28,7 @@ body, html, #root {
   height: 100vh;
 }
 
+/* NAVBAR */
 .navbar {
   height: 48px;
   background: var(--bg-surface);
@@ -35,6 +38,7 @@ body, html, #root {
   align-items: center;
   padding: 0 20px;
   flex-shrink: 0;
+  z-index: 10;
 }
 
 .brand { display: flex; align-items: center; gap: 12px; }
@@ -55,8 +59,10 @@ body, html, #root {
   display: flex;
   flex: 1;
   overflow: hidden;
+  position: relative;
 }
 
+/* ACTIVITY BAR - Responsive behavior: hidden on small screens */
 .activity-bar {
   width: 50px;
   background: var(--bg-dark);
@@ -67,23 +73,96 @@ body, html, #root {
   padding-top: 20px;
   gap: 25px;
   flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  .activity-bar {
+    display: none; /* Hide to reclaim space on mobile */
+  }
 }
 
 .activity-bar .icon { font-size: 20px; opacity: 0.4; cursor: pointer; transition: 0.2s; }
 .activity-bar .icon.active { opacity: 1; border-left: 2px solid var(--accent); width: 100%; text-align: center; }
 
-/* WORKSPACE - NEW GRID IMPLEMENTATION */
+/* --- GLOBAL RESET FOR FULL SCREEN --- */
+body, html, #root {
+  height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Prevent double scrollbars */
+}
+
+.ide-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+}
+
+.ide-body {
+  display: flex;
+  flex: 1; /* Fills remaining height */
+  width: 100%;
+  overflow: hidden;
+}
+
+/* --- THE FIX: DYNAMIC WORKSPACE --- */
 .workspace {
   flex: 1;
   display: grid;
-  grid-template-rows: 60% 40%; /* Splits Editor and Terminal perfectly */
-  padding: 12px;
-  gap: 12px;
-  height: 100%;
+  /* Desktop: Two rows. Top 65%, Bottom 35% */
+  grid-template-rows: 65% 35%; 
+  padding: 10px;
+  gap: 10px;
   box-sizing: border-box;
-  min-height: 0; /* Important for grid item scrolling */
+  height: 100%;
+  width: 100%; /* Ensures it expands to full width */
 }
 
+/* --- RESPONSIVE BREAKPOINTS --- */
+@media (max-width: 768px) {
+  .activity-bar {
+    display: none; /* Reclaim space on mobile */
+  }
+  
+  .workspace {
+    /* Mobile: 50/50 split so both are usable */
+    grid-template-rows: 1fr 1fr;
+    padding: 5px;
+  }
+
+  .navbar h1 {
+    font-size: 14px;
+  }
+}
+
+/* --- PANEL CONTAINERS --- */
+.editor-container, .terminal-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* Critical for scrollable children */
+  width: 100%;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.editor-frame, .terminal-content {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+.terminal-content {
+  overflow-y: auto;
+  background: #000;
+  padding: 15px;
+}
+
+/* PANEL HEADERS */
 .panel-header {
   height: 36px;
   background: #27272a55;
@@ -100,33 +179,28 @@ body, html, #root {
 .tab { font-size: 11px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
 .tab.active { color: var(--accent); border-bottom: 2px solid var(--accent); height: 100%; display: flex; align-items: center; }
 
-/* EDITOR SECTION */
-.editor-container { 
+/* EDITOR & TERMINAL CONTAINERS */
+.editor-container, .terminal-container { 
   display: flex; 
   flex-direction: column; 
   min-height: 0; 
+  width: 100%;
 }
-.editor-frame { 
+
+.editor-frame, .terminal-content { 
   flex: 1; 
   border: 1px solid var(--border); 
   border-radius: 0 0 8px 8px; 
   overflow: hidden; 
+  min-height: 0;
 }
 
-/* TERMINAL SECTION - SCROLL OPTIMIZED */
-.terminal-container { 
-  display: flex; 
-  flex-direction: column; 
-  min-height: 0; 
-}
+/* TERMINAL SPECIFICS */
 .terminal-content { 
-  flex: 1; 
   background: #000; 
-  border: 1px solid var(--border); 
-  border-radius: 0 0 8px 8px; 
   padding: 15px; 
-  overflow-y: auto; /* Enables vertical scroll */
-  overflow-x: hidden; /* Prevents side-scrolling */
+  overflow-y: auto; 
+  overflow-x: hidden;
 }
 
 .terminal-content pre { 
@@ -135,24 +209,15 @@ body, html, #root {
   font-size: 13px; 
   margin: 0; 
   line-height: 1.6;
-  white-space: pre-wrap; /* Wraps long lines */
+  white-space: pre-wrap; 
   word-wrap: break-word;
 }
 
-/* CUSTOM SCROLLBAR for Terminal Content */
-.terminal-content::-webkit-scrollbar {
-  width: 6px;
-}
-.terminal-content::-webkit-scrollbar-track {
-  background: transparent;
-}
-.terminal-content::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 10px;
-}
-.terminal-content::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
-}
+/* CUSTOM SCROLLBAR */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
 /* BUTTONS */
 .run-btn {
@@ -174,24 +239,8 @@ body, html, #root {
 
 .run-btn.running { background: #ef4444; }
 
-/* .clear-btn {
-  background: transparent;
-  color: var(--text-muted);
-  border: 1px solid var(--border);
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 10px;
-  cursor: pointer;
-}
-
-.clear-btn:hover {
-  color: var(--text-primary);
-  border-color: var(--text-muted);
-} */
-
-/* IMPROVED CLEAR BUTTON */
 .clear-btn {
-  background: rgba(255, 255, 255, 0.05); /* Subtle glass effect */
+  background: rgba(255, 255, 255, 0.05); 
   color: var(--text-dim);
   border: 1px solid var(--border);
   padding: 4px 12px;
@@ -204,29 +253,33 @@ body, html, #root {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
-  justify-content: center;
 }
 
 .clear-btn:hover {
-  background: rgba(239, 68, 68, 0.1); /* Subtle red tint on hover */
-  color: #f87171; /* Soft red text */
-  border-color: #ef4444; /* Bright red border */
+  background: rgba(239, 68, 68, 0.1); 
+  color: #f87171; 
+  border-color: #ef4444; 
   box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
 }
 
-.clear-btn:active {
-  transform: scale(0.95); /* Click feedback */
-}
+.clear-btn:active { transform: scale(0.95); }
 
 /* STATUS BAR */
 .ide-status-bar {
   height: 24px;
   background: var(--accent);
   display: flex;
-  gap: 20px;
+  justify-content: space-between; /* Professional space-between layout */
   padding: 0 20px;
   align-items: center;
   font-size: 10px;
   color: white;
   flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .ide-status-bar {
+    font-size: 8px;
+    padding: 0 10px;
+  }
 }

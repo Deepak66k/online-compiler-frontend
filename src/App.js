@@ -4,7 +4,7 @@ import "./App.css";
 
 function App() {
   // 1. Add state for the dynamic language name
-  const [language, setLanguage] = useState("Python"); 
+  const [language, setLanguage] = useState("Python");
   const [code, setCode] = useState("for i in range(50):\n    print(f'Line {i}: Hello World')");
   const [output, setOutput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -63,12 +63,22 @@ function App() {
               </button>
             </div>
             <div className="editor-frame">
-              <Editor 
-                height="100%" 
-                defaultLanguage={language.toLowerCase()} 
-                theme="vs-dark" 
-                value={code} 
-                onChange={setCode} 
+              <Editor
+                height="100%"
+                width="100%" // Force 100% width
+                defaultLanguage={language.toLowerCase()}
+                theme="vs-dark"
+                value={code}
+                onChange={setCode}
+                options={{
+                  automaticLayout: true, // Forces editor to resize with the container
+                  wordWrap: "on",        // Essential for mobile
+                  fontSize: window.innerWidth < 768 ? 12 : 14,
+                  minimap: { enabled: false },
+                  scrollBeyondLastLine: false,
+                  lineNumbersMinChars: 3,
+                  padding: { top: 10 }
+                }}
               />
             </div>
           </div>
