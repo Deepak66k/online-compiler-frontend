@@ -1,38 +1,232 @@
-.App {
-  text-align: center;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&family=JetBrains+Mono&display=swap');
+
+:root {
+  --bg-dark: #09090b;      /* Deep Zinc */
+  --bg-surface: #18181b;   /* Surface Zinc */
+  --border: #27272a;       /* Border Zinc */
+  --accent: #6366f1;       /* Indigo */
+  --neon-green: #22c55e;
+  --text-primary: #fafafa;
+  --text-muted: #71717a;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+body, html, #root {
+  height: 100vh;
+  margin: 0;
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  overflow: hidden; /* Prevents whole-page scrolling */
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+/* SHELL LAYOUT */
+.ide-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.navbar {
+  height: 48px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  flex-shrink: 0;
+}
+
+.brand { display: flex; align-items: center; gap: 12px; }
+.logo { 
+  background: var(--accent); 
+  width: 24px; height: 24px; 
+  display: flex; align-items: center; justify-content: center;
+  font-weight: bold; border-radius: 4px; font-size: 14px;
+}
+.brand h1 { font-size: 14px; letter-spacing: 0.5px; font-weight: 300; margin: 0; white-space: nowrap; }
+.brand h1 span { font-weight: 700; color: var(--accent); }
+
+.session-info { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 8px; }
+.status-dot { width: 8px; height: 8px; background: var(--neon-green); border-radius: 50%; box-shadow: 0 0 8px var(--neon-green); }
+
+/* MAIN IDE BODY */
+.ide-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.activity-bar {
+  width: 50px;
+  background: var(--bg-dark);
+  border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+  padding-top: 20px;
+  gap: 25px;
+  flex-shrink: 0;
+}
+
+.activity-bar .icon { font-size: 20px; opacity: 0.4; cursor: pointer; transition: 0.2s; }
+.activity-bar .icon.active { opacity: 1; border-left: 2px solid var(--accent); width: 100%; text-align: center; }
+
+/* WORKSPACE - NEW GRID IMPLEMENTATION */
+.workspace {
+  flex: 1;
+  display: grid;
+  grid-template-rows: 60% 40%; /* Splits Editor and Terminal perfectly */
+  padding: 12px;
+  gap: 12px;
+  height: 100%;
+  box-sizing: border-box;
+  min-height: 0; /* Important for grid item scrolling */
+}
+
+.panel-header {
+  height: 36px;
+  background: #27272a55;
+  border: 1px solid var(--border);
+  border-bottom: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 15px;
+  border-radius: 8px 8px 0 0;
+  flex-shrink: 0;
+}
+
+.tab { font-size: 11px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+.tab.active { color: var(--accent); border-bottom: 2px solid var(--accent); height: 100%; display: flex; align-items: center; }
+
+/* EDITOR SECTION */
+.editor-container { 
+  display: flex; 
+  flex-direction: column; 
+  min-height: 0; 
+}
+.editor-frame { 
+  flex: 1; 
+  border: 1px solid var(--border); 
+  border-radius: 0 0 8px 8px; 
+  overflow: hidden; 
+}
+
+/* TERMINAL SECTION - SCROLL OPTIMIZED */
+.terminal-container { 
+  display: flex; 
+  flex-direction: column; 
+  min-height: 0; 
+}
+.terminal-content { 
+  flex: 1; 
+  background: #000; 
+  border: 1px solid var(--border); 
+  border-radius: 0 0 8px 8px; 
+  padding: 15px; 
+  overflow-y: auto; /* Enables vertical scroll */
+  overflow-x: hidden; /* Prevents side-scrolling */
+}
+
+.terminal-content pre { 
+  color: var(--neon-green); 
+  font-family: 'JetBrains Mono', monospace; 
+  font-size: 13px; 
+  margin: 0; 
+  line-height: 1.6;
+  white-space: pre-wrap; /* Wraps long lines */
+  word-wrap: break-word;
+}
+
+/* CUSTOM SCROLLBAR for Terminal Content */
+.terminal-content::-webkit-scrollbar {
+  width: 6px;
+}
+.terminal-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+.terminal-content::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 10px;
+}
+.terminal-content::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* BUTTONS */
+.run-btn {
+  background: var(--accent);
   color: white;
+  border: none;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 10px;
+  cursor: pointer;
+  transition: 0.2s;
 }
 
-.App-link {
-  color: #61dafb;
+.run-btn:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.run-btn.running { background: #ef4444; }
+
+/* .clear-btn {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.clear-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--text-muted);
+} */
+
+/* IMPROVED CLEAR BUTTON */
+.clear-btn {
+  background: rgba(255, 255, 255, 0.05); /* Subtle glass effect */
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.clear-btn:hover {
+  background: rgba(239, 68, 68, 0.1); /* Subtle red tint on hover */
+  color: #f87171; /* Soft red text */
+  border-color: #ef4444; /* Bright red border */
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+}
+
+.clear-btn:active {
+  transform: scale(0.95); /* Click feedback */
+}
+
+/* STATUS BAR */
+.ide-status-bar {
+  height: 24px;
+  background: var(--accent);
+  display: flex;
+  gap: 20px;
+  padding: 0 20px;
+  align-items: center;
+  font-size: 10px;
+  color: white;
+  flex-shrink: 0;
 }
