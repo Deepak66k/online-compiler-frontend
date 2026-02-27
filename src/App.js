@@ -1,5 +1,6 @@
 import Editor from "@monaco-editor/react";
 import { useState, useEffect, useRef } from "react";
+import packageInfo from '../package.json';
 import "./App.css";
 
 const defaultTemplates = {
@@ -10,6 +11,7 @@ console.log('Hello World');`,
 };
 
 function App() {
+  const currentVersion = packageInfo.version;
   const [language, setLanguage] = useState("Python");
   const [code, setCode] = useState(defaultTemplates["Python"]);
   const [output, setOutput] = useState("");
@@ -72,6 +74,21 @@ function App() {
     }
     setLoading(false);
   };
+  const [engineVersions, setEngineVersions] = useState({ python: "...", javascript: "..." });
+
+  useEffect(() => {
+    const fetchVersions = async () => {
+      try {
+        const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
+        const response = await fetch(`${API_BASE_URL}/versions`);
+        const data = await response.json();
+        setEngineVersions(data);
+      } catch (err) {
+        console.error("Failed to fetch engine versions", err);
+      }
+    };
+    fetchVersions();
+  }, []);
 
   return (
     <div className="ide-shell">
@@ -145,9 +162,10 @@ function App() {
       </main>
 
       <footer className="ide-status-bar">
-        <span>UTF-8</span>
         {/* 4. Dynamic version info */}
-        <span>{language} 3.x Engine</span>
+        <span>
+        {language} {language === 'Python' ? engineVersions.python : engineVersions.javascript} Engine </span>
+        <span className="version-tag">v{currentVersion}</span>
         <span>© 2026 DEEPAK KUMAR</span>
       </footer>
     </div>
