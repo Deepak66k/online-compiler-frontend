@@ -2,14 +2,40 @@ import Editor from "@monaco-editor/react";
 import { useState, useEffect, useRef } from "react";
 import "./App.css";
 
+const defaultTemplates = {
+  Python: `# Online Python interpreter to run Python programs: simply write, execute, and see results instantly.
+print('Hello World')`,
+  JS: `// Online JavaScript interpreter to run JS programs: simply write, execute, and see results instantly.
+console.log('Hello World');`,
+};
+
 function App() {
-  // 1. Add state for the dynamic language name
   const [language, setLanguage] = useState("Python");
-  const [code, setCode] = useState("for i in range(50):\n    print(f'Line {i}: Hello World')");
+  const [code, setCode] = useState(defaultTemplates["Python"]);
   const [output, setOutput] = useState("");
   const [loading, setLoading] = useState(false);
   const terminalRef = useRef(null);
+  const handleLanguageChange = (newLang) => {
+    if (newLang === language) return;
+    // If the user has typed something, ask before clearing
+    if (code && code !== defaultTemplates[language]) {
+      const confirmSwitch = window.confirm(
+        "You have unsaved changes. Switching languages will reset the editor. Continue?"
+      );
+      if (!confirmSwitch) return; // User cancelled, stay on current language
+    }
+    // 3. ✅ THE FIX: Clear the terminal output before switching
+    setOutput("");
+    // 4. Update the language
+    setLanguage(newLang);
+  };
 
+  // 2. NEW: This effect handles the automatic template switching
+  useEffect(() => {
+    setCode(defaultTemplates[language]);
+  }, [language]);
+
+  // Terminal auto-scroll effect
   useEffect(() => {
     if (terminalRef.current) {
       terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
@@ -19,16 +45,30 @@ function App() {
   const runCode = async () => {
     setLoading(true);
     setOutput(`> Initializing ${language} runtime...\n`);
+
+    const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
+
     try {
-      const response = await fetch("https://online-compiler-backend-t5k9.onrender.com/run", {
+      const response = await fetch(`${API_BASE_URL}/run`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code, language: language.toLowerCase() })
+        body: JSON.stringify({
+          code,
+          // Ensure "JS" is sent as "javascript" if your backend expects that
+          language: language === "JS" ? "javascript" : language.toLowerCase()
+        })
       });
+
       const data = await response.json();
-      setOutput(data.output);
+
+      if (data.stderr) {
+        setOutput("Error:\n" + data.stderr);
+      } else {
+        setOutput(data.output);
+      }
     } catch (error) {
       setOutput(`> Error: ${language} execution server unreachable.`);
+      console.error("API Error:", error);
     }
     setLoading(false);
   };
@@ -48,9 +88,18 @@ function App() {
 
       <main className="ide-body">
         <aside className="activity-bar">
-          {/* These icons could be used to switch languages in the future */}
-          <div className={`icon ${language === 'Python' ? 'active' : ''}`} onClick={() => setLanguage('Python')}>🐍</div>
-          <div className={`icon ${language === 'JS' ? 'active' : ''}`} onClick={() => setLanguage('JS')}>📜</div>
+          <div
+            className={`icon ${language === 'Python' ? 'active' : ''}`}
+            onClick={() => handleLanguageChange('Python')}
+          >
+            🐍
+          </div>
+          <div
+            className={`icon ${language === 'JS' ? 'active' : ''}`}
+            onClick={() => handleLanguageChange('JS')}
+          >
+            📜
+          </div>
         </aside>
 
         <section className="workspace">
